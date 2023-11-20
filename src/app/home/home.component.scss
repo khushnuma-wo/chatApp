@@ -1,0 +1,55 @@
+.button {
+    width: 100%;
+    padding: 10;
+    background-color: #b3769b;
+    color: white;
+    border-radius: 5;
+    text-align: center;
+  }
+  .gridClass {
+    // background-color:transparent;
+    border-color: rgb(20, 113, 175);
+    border-width: 3;
+    padding-bottom: 20%;
+  //   opacity: 0.7;
+  }
+  
+  .text-secondary {
+    color: black !important;
+    font-weight: 900;
+  }
+  .grid {
+    background-image: url("~/images/bg.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    // padding: 20px;
+  }
+  .name {
+    color: rgb(30, 15, 240);
+    font-weight: 900;
+  }
+  .profile-img {
+    margin-bottom: 150;
+    height: 70;
+    width: 70;
+    border-color: rgb(20, 113, 175);
+    border-width: 3;
+    border-radius: 50;
+  }
+  .label-icon{
+    font-weight: 900;
+  }
+  .chatLength {
+    position: absolute;
+    font-size: 14px; 
+    padding: 2px 5px; 
+    margin-bottom: 8;
+    border-radius: 50;
+    color: black;
+}
+.light-overlay {
+  position: absolute;
+  background-color: rgba(105, 105, 105, 0.3);
+  display: flex;
+  z-index: 1000;
+}

@@ -1,0 +1,62 @@
+<StackLayout class="container">
+  <Image
+    src="~/images/user.png"
+    class="profile-img"
+    stretch="aspectFill"
+    width="80"
+    height="80"
+  />
+  <StackLayout class="input-field">
+    <TextField
+      class="input"
+      hint="Name"
+      maxLength="20"
+      [(ngModel)]="name"
+    ></TextField>
+  </StackLayout>
+  <StackLayout class="input-field">
+    <TextField
+      class="input"
+      hint="Email"
+      maxLength="50"
+      [(ngModel)]="email"
+      (textChange)="validateForm()"
+    ></TextField>
+  </StackLayout>
+  <StackLayout class="input-field">
+    <TextField
+      class="input"
+      hint="Password"
+      secure="true"
+      name="password"
+      maxLength="20"
+      [(ngModel)]="password"
+      (textChange)="validateForm()"
+    ></TextField>
+  </StackLayout>
+  <Button
+    text="Signup"
+    class="button"
+    (tap)="signup()"
+    [isEnabled]="isFormValid"
+  ></Button>
+  <Button
+    text="Go to Login"
+    nsRouterLink="/login"
+    class="button"
+  ></Button>
+<!-- <FlexboxLayout padding="5" alignItems="center" justifyContent="center">
+  <FlexboxLayout padding="5" class="button-signup" (tap)="signupWithFacebook()">
+    <Image src="~/images/facebook-icon.png" width="35" height="35" verticalAlignment="center"></Image>
+    <Label text="Signup with Facebook" fontWeight="700" marginLeft="5" color="black"></Label>
+  </FlexboxLayout>
+  <FlexboxLayout padding="5" class="button-signup" marginLeft="5" (tap)="signupWithGoogle()">
+    <Image src="~/images/google-icon.png" width="35" height="35" verticalAlignment="center"></Image>
+    <Label text="Signup with Google" fontWeight="700" marginLeft="5" color="black"></Label>
+  </FlexboxLayout>
+</FlexboxLayout> -->
+</StackLayout>
+<FlexboxLayout *ngIf="isLoading" height="100%" justifyContent="center" alignItems="center" class="light-overlay">
+  <ActivityIndicator [busy]="isLoading" color="blue" width="36" height="36" horizontalAlignment="center">
+  </ActivityIndicator>
+</FlexboxLayout>

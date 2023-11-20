@@ -1,0 +1,54 @@
+<StackLayout class="container">
+  <Image
+    src="~/images/user.png"
+    class="profile-img"
+    stretch="aspectFill"
+    width="80"
+    height="80"
+  />
+  <StackLayout class="input-field">
+    <TextField
+      class="input"
+      hint="Email"
+      name="email"
+      maxLength="50"
+      [(ngModel)]="email"
+      (textChange)="validateForm()"
+    ></TextField>
+  </StackLayout>
+
+  <StackLayout class="input-field">
+    <TextField
+      class="input"
+      hint="Password"
+      secure="true"
+      name="password"
+      maxLength="20"
+      [(ngModel)]="password"
+    ></TextField>
+  </StackLayout>
+
+  <Button text="Log In" class="button" (tap)="login()" [isEnabled]="isFormValid"></Button>
+  <Button
+    text="Go to Signup"
+    nsRouterLink="/signup"
+    class="button"
+  ></Button>
+  <FlexboxLayout padding="5" class="pass-label" (tap)="GoToForgotPassworPage()">
+    <Label text="Don't remember the password..?" fontWeight="700" marginLeft="5"></Label>
+  </FlexboxLayout>
+  <!-- <FlexboxLayout padding="5" alignItems="center" justifyContent="center">
+    <FlexboxLayout padding="5" class="button-signup" (tap)="loginWithFacebook()">
+      <Image src="~/images/facebook-icon.png" width="35" height="35" verticalAlignment="center"></Image>
+      <Label text="SignIn with Facebook" fontWeight="700" marginLeft="5" color="black"></Label>
+    </FlexboxLayout>
+    <FlexboxLayout padding="5" class="button-signup" marginLeft="5" (tap)="loginWithGoogle()">
+      <Image src="~/images/google-icon.png" width="35" height="35" verticalAlignment="center"></Image>
+      <Label text="SignIn with Google" fontWeight="700" marginLeft="5" color="black"></Label>
+    </FlexboxLayout>
+  </FlexboxLayout>-->
+</StackLayout> 
+  <FlexboxLayout *ngIf="isLoading" height="100%" justifyContent="center" alignItems="center" class="light-overlay">
+    <ActivityIndicator [busy]="isLoading" color="blue" width="36" height="36" horizontalAlignment="center">
+    </ActivityIndicator>
+  </FlexboxLayout>

@@ -1,0 +1,39 @@
+<StackLayout horizontalAlignment="left">
+  <ActionBar title="Chat List">
+    <ActionItem position="left">
+      <GridLayout width="40">
+        <Image width="35" height="35" android:marginBottom="3"></Image>
+      </GridLayout>
+    </ActionItem>
+    <ActionItem (tap)="goBack()">
+      <GridLayout width="70">
+        <Image width="20" height="20" android:marginBottom="3" src="~/images/close.png"></Image>
+      </GridLayout>
+    </ActionItem>
+  </ActionBar>
+</StackLayout>
+<GridLayout class="grid">
+  <ListView [items]="usersWithMessageCollection" height="100%">
+    <ng-template let-item="item">
+      <GridLayout columns="auto, *, auto" class="gridClass" borderRadius="5" (tap)="openChat(item)">
+        <StackLayout height="53" width="53">
+          <Image src="~/images/profile.png" class="profile-img" stretch="aspectFill"></Image>
+        </StackLayout>
+        <StackLayout col="1" row="0">
+          <GridLayout columns="auto, *, auto" rows="auto">
+            <Label col="0" [text]="item.name" margin="0 0" fontWeight="700" class="name" fontSize="18"></Label>
+            <Label col="2" [text]="getNewMessageCount(item.userUid)" class="new-message-count" *ngIf="getNewMessageCount(item.userUid)"></Label>
+          </GridLayout>
+        </StackLayout>
+      </GridLayout>
+    </ng-template>
+  </ListView>
+</GridLayout>
+<StackLayout height="60%" width="70%" verticalAlignment="center" horizontalAlignment="center" *ngIf="userLength === 0">
+  <Image src="~/images/noChat.png" height="100" width="100" stretch="aspectFill"></Image>
+  <Label fontWeight="700" class="name" fontSize="18" text="No Message Available"></Label>
+</StackLayout>
+<FlexboxLayout *ngIf="isLoading" height="100%" justifyContent="center" alignItems="center" class="light-overlay">
+  <ActivityIndicator [busy]="isLoading" color="blue" width="36" height="36" horizontalAlignment="center">
+  </ActivityIndicator>
+</FlexboxLayout>

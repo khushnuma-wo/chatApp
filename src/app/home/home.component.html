@@ -1,0 +1,50 @@
+<StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
+  <ActionBar title="Chat Application">
+    <ActionItem position="left">
+      <GridLayout width="50">
+        <Image width="30" height="30" android:marginBottom="3" src="~/images/logout.png" (tap)="logout()"></Image>
+      </GridLayout>
+    </ActionItem>
+    <ActionItem position="left">
+      <FlexBoxLayout justifyContent="space-between">
+        <Image width="30" height="30" android:marginBottom="3" src="~/images/chat.png" (tap)="chatList()"></Image>
+        <FlexBoxLayout flexGrow="1" alignItems="center">
+          <Label fontWeight="700" class="chatLength" [text]="userLength"></Label>
+        </FlexBoxLayout>
+      </FlexBoxLayout>
+    </ActionItem>
+  </ActionBar>
+</StackLayout>
+<GridLayout class="grid">
+  <GridLayout marginTop="5">
+  <ListView [items]="allUsers" height="100%" margin="10">
+    <ng-template let-item="item">
+      <GridLayout columns="auto, *, auto" class="gridClass" borderRadius="10">
+        <StackLayout height="90">
+          <Image src="~/images/profile.png" class="profile-img" stretch="aspectFill"></Image>
+        </StackLayout>
+        <StackLayout col="1" row="0">
+          <GridLayout columns="auto, *" rows="auto" class="label-with-icon">
+            <Image col="0" src="~/images/name.png" height="20" class="label-icon" stretch="aspectFill"></Image>
+            <Label col="1" margin="0 0" fontWeight="700" class="name" fontSize="22" [text]="item.name"></Label>
+          </GridLayout>
+          <GridLayout columns="auto, *" rows="auto" class="label-with-icon">
+            <Image col="0" src="~/images/email.png" height="20" class="label-icon" stretch="aspectFill"></Image>
+            <Label col="1" margin="0 0" class="text-secondary" fontSize="15" textWrap="true"
+              [text]="item.email"></Label>
+          </GridLayout>
+          <GridLayout columns="auto, *" rows="auto" class="label-with-icon">
+            <Image col="0" src="~/images/chat.png" height="20" class="label-icon"></Image>
+            <Label col="1" margin="0 0" class="text-secondary" fontSize="15" textWrap="true"
+              [text]="'Chat with ' + item.name" (tap)="onChat(item)"></Label>
+          </GridLayout>
+        </StackLayout>
+      </GridLayout>
+    </ng-template>
+  </ListView>
+</GridLayout>
+  <FlexboxLayout *ngIf="isLoading" height="100%" justifyContent="center" alignItems="center" class="light-overlay">
+    <ActivityIndicator [busy]="isLoading" color="blue" width="36" height="36" horizontalAlignment="center">
+    </ActivityIndicator>
+  </FlexboxLayout>
+</GridLayout>

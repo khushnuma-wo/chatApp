@@ -1,0 +1,41 @@
+  .gridClass {
+      border-color: #1471af;
+      border-bottom-width: 1;
+  }
+
+  .grid {
+      background-image: url("~/images/bg.png");
+      background-repeat: no-repeat;
+      background-size: cover;
+      padding: 30px;
+  }
+
+  .name {
+      color: rgb(33, 72, 156);
+      font-weight: 900;
+      margin-left: 25%;
+  }
+
+  .profile-img {
+      height: 50;
+      width: 50;
+      border-color: rgb(20, 113, 175);
+      border-width: 3;
+      border-radius: 50%;
+  }
+  .light-overlay {
+    position: absolute;
+    background-color: rgba(105, 105, 105, 0.3);
+    display: flex;
+    z-index: 1000;
+  }
+  .new-message-count{
+    padding: 0;
+    height: 18;
+    width: 18;
+    text-align: center;
+    background-color: rgb(56, 118, 160);
+    font-weight: 700;
+    color: white;
+    border-radius: 50;
+  }
