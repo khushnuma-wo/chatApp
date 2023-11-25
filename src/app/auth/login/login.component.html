@@ -27,16 +27,16 @@
       [(ngModel)]="password"
     ></TextField>
   </StackLayout>
+  <StackLayout class="pass-label" (tap)="GoToForgotPassworPage()">
+    <Label text="Forgot password?" marginLeft="20"></Label>
+  </StackLayout>
 
-  <Button text="Log In" class="button" (tap)="login()" [isEnabled]="isFormValid"></Button>
+  <Button text="Login" class="button" (tap)="login()" marginTop="15" [isEnabled]="isFormValid"></Button>
   <Button
-    text="Go to Signup"
+    text="Sign Up"
     nsRouterLink="/signup"
     class="button"
   ></Button>
-  <FlexboxLayout padding="5" class="pass-label" (tap)="GoToForgotPassworPage()">
-    <Label text="Don't remember the password..?" fontWeight="700" marginLeft="5"></Label>
-  </FlexboxLayout>
   <!-- <FlexboxLayout padding="5" alignItems="center" justifyContent="center">
     <FlexboxLayout padding="5" class="button-signup" (tap)="loginWithFacebook()">
       <Image src="~/images/facebook-icon.png" width="35" height="35" verticalAlignment="center"></Image>
