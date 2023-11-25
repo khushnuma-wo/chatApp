@@ -19,9 +19,10 @@
     font-weight: 900;
   }
   .grid {
-    background-image: url("~/images/bg.png");
-    background-repeat: no-repeat;
-    background-size: cover;
+    background-color: white;
+    // background-image: url("~/images/bg.png");
+    // background-repeat: no-repeat;
+    // background-size: cover;
     // padding: 20px;
   }
   .name {
@@ -29,11 +30,8 @@
     font-weight: 900;
   }
   .profile-img {
-    margin-bottom: 150;
-    height: 70;
-    width: 70;
-    border-color: rgb(20, 113, 175);
-    border-width: 3;
+    height: 50;
+    width: 50;
     border-radius: 50;
   }
   .label-icon{
@@ -41,15 +39,16 @@
   }
   .chatLength {
     position: absolute;
-    font-size: 14px; 
-    padding: 2px 5px; 
-    margin-bottom: 8;
-    border-radius: 50;
-    color: black;
+    font-size: 14px;
+    color: white;
 }
 .light-overlay {
   position: absolute;
   background-color: rgba(105, 105, 105, 0.3);
   display: flex;
   z-index: 1000;
+}
+.action-bar {
+  color: black;
+  background-color: rgba(249, 249, 249, 0.94);
 }

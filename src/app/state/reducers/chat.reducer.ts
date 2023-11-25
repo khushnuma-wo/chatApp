@@ -1,9 +1,9 @@
 import { createReducer, on } from '@ngrx/store';
-import { fetchMessagesSuccess, sendMessage } from '../actions/chat.actions';
+import { fetchMessagesSuccess, sendMessage, deleteChatMessage, updateMessage } from '../actions/chat.actions';
 
 export interface ChatState {
-  messages: { senderId: string; receiverId: string; message: string;timestamp?:string }[];
-  loading: boolean; 
+  messages: { id?: string, senderId: string; receiverId: string; message: string; timestamp?: string }[];
+  loading: boolean;
 }
 
 const initialState: ChatState = {
@@ -13,12 +13,12 @@ const initialState: ChatState = {
 
 export const chatReducer = createReducer(
   initialState,
-  on(sendMessage, (state, { senderId, receiverId, message }) => {
+  on(sendMessage, (state, { senderId, receiverId, message, timestamp, isLoggedIn, imageUrls }) => {
     return {
       ...state,
       messages: [
         ...state.messages,
-        { senderId,receiverId, message },
+        { senderId, receiverId, message, timestamp, isLoggedIn, imageUrls },
       ],
     };
   }),
@@ -26,6 +26,29 @@ export const chatReducer = createReducer(
     return {
       ...state,
       messages,
+    };
+  }),
+  on(deleteChatMessage, (state, { userId, messageID }) => {
+    const updatedMessages = state.messages.filter(message => message.id !== messageID);
+    return {
+      ...state,
+      messages: updatedMessages,
+    };
+  }),
+  on(updateMessage, (state, { userId, messageID, updatedMessageObject }) => {
+    const updatedMessages = state.messages.map(message => {
+      if (message.id === messageID) {
+        return {
+          ...message,
+          ...updatedMessageObject,
+        };
+      }
+      return message;
+    });
+
+    return {
+      ...state,
+      messages: updatedMessages,
     };
   })
 )

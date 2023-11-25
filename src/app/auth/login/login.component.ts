@@ -1,5 +1,6 @@
 import { Component } from "@angular/core";
 import { RouterExtensions } from "@nativescript/angular";
+import { Page } from "@nativescript/core";
 import { Feedback, FeedbackType, FeedbackPosition } from "nativescript-feedback";
 import { UserService } from "~/app/services/user.service";
 
@@ -15,8 +16,12 @@ export class LoginComponent {
   private feedback: Feedback;
   isLoading: boolean = false;
 
-  constructor(private routerExtensions: RouterExtensions, private userService: UserService) {
+  constructor(private routerExtensions: RouterExtensions, private userService: UserService, private page: Page) {
     this.feedback = new Feedback();
+  }
+
+  ngOnInit() {
+    this.page.actionBarHidden = true;
   }
 
   validateForm() {

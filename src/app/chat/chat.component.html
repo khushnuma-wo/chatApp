@@ -1,77 +1,132 @@
-<StackLayout horizontalAlignment="left">
-  <ActionBar [title]="'Chat with ' + userName">
-    <ActionItem position="left">
-      <GridLayout width="40">
-        <Image width="35" height="35" android:marginBottom="3"></Image>
-      </GridLayout>
-    </ActionItem>
-    <ActionItem (tap)="goBack()">
-      <GridLayout width="70">
-        <Image width="20" height="20" android:marginBottom="3" src="~/images/close.png"></Image>
-      </GridLayout>
-    </ActionItem>
+<StackLayout>
+  <ActionBar [text]="userName" class="action-bar" flat="true">
+    <StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
+      <Image width="30" height="30" src="~/images/man2.png"></Image>
+      <Label verticalAlignment="center" marginLeft="15" fontSize="20" fontWeight="500" color="black"
+        [text]="userName"></Label>
+    </StackLayout>
+    <NavigationButton ios:visibility="collapse" (tap)="goBack()" icon="font://&#xf053;" class="fas">
+    </NavigationButton>
   </ActionBar>
-</StackLayout>
-<GridLayout class="chat-container" rows="*, auto">
-  <GridLayout rows="* auto auto" columns="*" height="100%">
-    <ScrollView row="0" height="100%">
+  <GridLayout rows="* auto auto" class="chat-container" columns="*" height="100%" paddingTop="15">
+    <ScrollView row="0" height="100%" #myScrollView>
       <StackLayout class="message-container" flexDirection="column-reverse">
         <ng-container *ngFor="let message of messages">
           <FlexboxLayout [ngClass]="{'message-row-right': message.isLoggedIn, 'message-row-left': !message.isLoggedIn}"
-            padding="10">
-            <Image src="~/images/profile2.png" width="35" height="35" class="image"></Image>
-            <StackLayout *ngIf="message.isLoggedIn">
+            *ngIf="!message.dateSeparator">
+            <Image src="~/images/man2.png" width="35" height="35" class="image" *ngIf="!message.isLoggedIn"></Image>
+            <StackLayout [ngClass]="{'right-message': message.isLoggedIn, 'left-message': !message.isLoggedIn}"
+              (longPress)="onLongPress($event, message)" padding="5 20 5 10"
+              [borderRadius]="message.isLoggedIn ? '10 10 0 10' : '10 10 10 0'">
+              <FlexboxLayout justifyContent="space-between">
+                <Label [text]="userName" *ngIf="!message.isLoggedIn" color="orange" fontSize="12"
+                  fontWeight="bold"></Label>
+              </FlexboxLayout>
+              <Label [text]="message.message" *ngIf="message.message" fontSize="12"></Label>
+              <StackLayout *ngFor="let imageUrl of message.imageUrls">
+                <Image [src]="imageUrl" width="150" height="150" borderRadius="4" borderWidth="0.5" borderColor="gray"
+                  stretch="aspectFill" class="selected-image" marginTop="5"></Image>
+              </StackLayout>
+            </StackLayout>
+          </FlexboxLayout>
+          <FlexboxLayout [horizontalAlignment]="message.isLoggedIn ? 'right' : 'left'" alignItems="center"
+            padding="0 0 15 0">
+            <Label [text]="getMessageText(message)" [marginLeft]="!message.isLoggedIn ? '45' : '0'" fontSize="10"
+              [ngClass]="{'right-message-time': message.isLoggedIn, 'left-message-time': !message.isLoggedIn}"
+              color="#57646E"></Label>
+              <Label *ngIf="message.isEdited" text="  (edited) " color="#57646E" fontSize="10"></Label>
+            <StackLayout *ngIf="message.isLoggedIn" [margin]="message.isLoggedIn ? '0 5 0 5' : '0'">
               <ng-container *ngIf="message.seen || message.receiverOpened">
-                <Image src="~/images/double-tick.png" width="15" height="15" marginTop="5"></Image>
+                <Image src="~/images/double-tick.png" width="15" height="15"></Image>
               </ng-container>
               <ng-container *ngIf="!message.seen && !message.receiverOpened">
-                <Image src="~/images/single-tick.png" width="10" height="10" marginTop="5"></Image>
+                <Image src="~/images/single-tick.png" width="10" height="10"></Image>
               </ng-container>
             </StackLayout>
-            <Label [text]="getMessageText(message)"
-              [ngClass]="{'right-message-time': message.isLoggedIn, 'left-message-time': !message.isLoggedIn}"></Label>
-            <Label [text]="message.message"
-              [ngClass]="{'right-message': message.isLoggedIn, 'left-message': !message.isLoggedIn}"></Label>
           </FlexboxLayout>
+          <FlexBoxLayout marginTop="10" marginBottom="10" width="100%" justifyContent="center" alignItems="center"
+            *ngIf="message.dateSeparator">
+            <AbsoluteLayout width="100%" alignItems="center">
+              <Label backgroundColor="#F5F5F5" height="1" top="11" width="100%"></Label>
+              <FlexBoxLayout width="100%" alignItems="center" justifyContent="center">
+                <Label color="#57646E" left="50%" marginRight="-8" backgroundColor="#F7F7F7" textAlign="center"
+                  fontSize="12" borderRadius="8" borderWidth="1" borderColor="transparent" padding="5 6"
+                  fontWeight="500" [text]="message.dateSeparator"></Label>
+              </FlexBoxLayout>
+            </AbsoluteLayout>
+          </FlexBoxLayout>
         </ng-container>
       </StackLayout>
     </ScrollView>
-    <StackLayout row="1" backgroundColor="#D7C4E8">
+    <StackLayout row="1" backgroundColor="#efefef">
       <ScrollView orientation="horizontal">
         <StackLayout orientation="horizontal">
           <ng-container *ngFor="let imagePath of selectedImagePaths; let i = index">
             <GridLayout rows="auto *">
               <Image [src]="imagePath" width="110" height="110" borderRadius="4" borderWidth="0.5" borderColor="gray"
-                stretch="aspectFill" marginRight="20" marginLeft="5" android:marginTop="5" class="selected-image"></Image>
+                stretch="aspectFill" marginRight="20" marginLeft="5" android:marginTop="5" class="selected-image">
+              </Image>
               <Label height="20" width="20" left="100" fontSize="10" backgroundColor="white" borderRadius="40"
-                horizontalAlignment="right" text="✖️" row="0" col="1" class="close-button"
-                (tap)="removeImage(i)" class="label-delete"></Label>
+                horizontalAlignment="right" text="✖️" row="0" col="1" class="close-button" (tap)="removeImage(i)"
+                class="label-delete"></Label>
             </GridLayout>
           </ng-container>
         </StackLayout>
       </ScrollView>
     </StackLayout>
-    <!-- <StackLayout row="2" height="1" backgroundColor="#C8C8C8"></StackLayout> -->
-    <!-- <Image *ngIf="selectedImagePath" [src]="selectedImagePath" width="100" height="100"></Image> -->
-    <GridLayout row="2" columns="auto * auto" padding="10 15">
-      <Image src="~/images/add.png" width="22" height="22" marginRight="10" (tap)="onUploadMedia()"></Image>
-      <StackLayout col="1" orientation="horizontal" verticalAlignment="center" borderWidth="1" borderColor="#f6f6f6"
-        borderRadius="15" height="auto" backgroundColor="#F2F4F8" marginRight="10">
-        <TextView hint="Message" padding="5" autocorrect="true" fontSize="14" textWrap="true" minHeight="40"
-          height="auto" [(ngModel)]="newMessage"></TextView>
-      </StackLayout>
-      <StackLayout col="2" verticalAlignment="center">
-        <Image src="~/images/send.png" width="30" height="29" marginTop="10" (tap)="sendMessage()"></Image>
-      </StackLayout>
-    </GridLayout>
+    <StackLayout row="2"  borderTopWidth="1" borderTopColor="#ededed" class="messageBox">
+      <GridLayout rows="*, *">
+        <!-- <StackLayout row="0" *ngIf="isEdited" (tap)="cancelEditedMessage()">
+          <Label text="Cancel" color="blue" fontWeight="bold" col="0" marginLeft="70%"></Label>
+        </StackLayout> -->
+
+        <FlexBoxLayout
+            *ngIf="isEdited"
+            justifyContent="space-between"
+            borderBottomWidth="1"
+            borderBottomColor="#ededed"
+            row="0"
+            padding="6 20"
+        >
+            <Label
+                text="Editing message"
+                fontSize="14"
+            >
+            </Label>
+            <Label
+                text="Cancel"
+                fontSize="14"
+                fontWeight="500"
+                color="#0F71EB"
+                (tap)="cancelEditedMessage()"
+                col="0"
+            >
+            </Label>
+        </FlexBoxLayout>
+        <StackLayout row="1" marginTop="5" padding="10 15">
+          <GridLayout rows="auto" columns="auto * auto">
+            <Image src="~/images/add-button.png" width="35" height="35" marginRight="10" (tap)="onUploadMedia()" row="0"
+              col="0"></Image>
+            <StackLayout row="0" col="1" orientation="horizontal" verticalAlignment="center" borderWidth="1"
+              borderColor="#f6f6f6" borderRadius="15" height="auto" backgroundColor="#F2F4F8" marginRight="15">
+              <TextView hint="Message" padding="5" autocorrect="true" fontSize="14" width="90%" textWrap="true"
+                color="black" minHeight="40" [(ngModel)]="newMessage"></TextView>
+            </StackLayout>
+            <StackLayout row="0" col="2" verticalAlignment="center">
+              <Image src="~/images/send-message.png" width="30" height="29" (tap)="sendMessage()"></Image>
+            </StackLayout>
+          </GridLayout>
+        </StackLayout>
+      </GridLayout>
+    </StackLayout>
+
     <StackLayout height="60%" width="70%" verticalAlignment="center" horizontalAlignment="center"
       *ngIf="totalMessages===0 && !isLoading">
       <Image src="~/images/noChat.png" height="100" width="100" stretch="aspectFill"></Image>
-      <!-- <Label fontWeight="700" class="name" fontSize="18" text="No Chat Available"></Label> -->
     </StackLayout>
     <FlexboxLayout *ngIf="isLoading" height="100%" justifyContent="center" alignItems="center" class="light-overlay">
       <ActivityIndicator [busy]="isLoading" color="blue" width="36" height="36" horizontalAlignment="center">
       </ActivityIndicator>
     </FlexboxLayout>
   </GridLayout>
-</GridLayout>
+</StackLayout>

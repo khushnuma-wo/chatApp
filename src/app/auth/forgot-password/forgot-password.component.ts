@@ -6,6 +6,7 @@ import { UserService } from "~/app/services/user.service";
 import { finalize, take, withLatestFrom } from "rxjs";
 import { Feedback, FeedbackPosition, FeedbackType } from "nativescript-feedback";
 import { RouterExtensions } from "@nativescript/angular";
+import { Page } from "@nativescript/core";
 
 @Component({
   selector: "ns-forgot-password",
@@ -17,8 +18,12 @@ export class ForgotPasswordComponent {
   isFormValid: boolean = false;
   private feedback: Feedback;
   isLoading: boolean = false;
-  constructor(private routerExtensions: RouterExtensions,private store: Store) {
+  constructor(private routerExtensions: RouterExtensions,private store: Store, private page: Page) {
     this.feedback = new Feedback();
+   }
+
+   ngOnInit() {
+     this.page.actionBarHidden = true;
    }
 
   isValidEmail(email: string): boolean {

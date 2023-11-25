@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { RouterExtensions } from "@nativescript/angular";
 import { UserService } from "~/app/services/user.service";
 import { Feedback, FeedbackType, FeedbackPosition } from "nativescript-feedback";
+import { Page } from "@nativescript/core";
 
 @Component({
   selector: "ns-signup",
@@ -16,8 +17,12 @@ export class SignupComponent {
   isFormValid: boolean = false;
   isLoading: boolean = false;
 
-  constructor(private routerExtensions: RouterExtensions, private userService: UserService) {
+  constructor(private routerExtensions: RouterExtensions, private userService: UserService, private page: Page) {
     this.feedback = new Feedback();
+  }
+
+  ngOnInit() {
+    this.page.actionBarHidden = true;
   }
   validateForm() {
     this.isFormValid = this.isValidEmail(this.email);
