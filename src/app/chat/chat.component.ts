@@ -32,7 +32,7 @@ export class ChatComponent {
   isSingleMode: boolean = true;
   thumbSize: number = 80;
   previewSize: number = 300;
-  selectedImagePaths: string[] = [];
+  selectedImagePaths: { path: string; fileType: string }[] = [];
   closeBtnIcon: string;
   selectedImagePath: string;
   isEdited: boolean = false;
@@ -127,10 +127,9 @@ export class ChatComponent {
           });
 
           this.messages = this.addDateSeparators(messageData);
-          console.log("messagesWithDateSeparators", this.messages)
           this.updateReceivedMessageAsSeen(senderId, receiverId);
           setTimeout(() => {
-          this.isLoading = false;
+            this.isLoading = false;
           }, 800)
           this.scrollToBottom();
         });
@@ -138,7 +137,6 @@ export class ChatComponent {
       console.error('Error loading chat messages:', error);
       this.isLoading = false;
     }
-    console.log("this.isLoading", this.isLoading);
   }
 
   addDateSeparators(messages: Message[]): (Message | { dateSeparator: string })[] {
@@ -147,27 +145,27 @@ export class ChatComponent {
     let currentDate = "";
 
     for (const message of messages) {
-        const messageDate = new Date(message.timestamp);
-        const today = new Date();
+      const messageDate = new Date(message.timestamp);
+      const today = new Date();
 
-        let formattedDate: string;
+      let formattedDate: string;
 
-        if (messageDate.toDateString() === today.toDateString()) {
-            formattedDate = "Today";
-        } else {
-            formattedDate = messageDate.toDateString();
-        }
+      if (messageDate.toDateString() === today.toDateString()) {
+        formattedDate = "Today";
+      } else {
+        formattedDate = messageDate.toDateString();
+      }
 
-        if (formattedDate !== currentDate) {
-            result.push({ dateSeparator: formattedDate });
-            currentDate = formattedDate;
-        }
+      if (formattedDate !== currentDate) {
+        result.push({ dateSeparator: formattedDate });
+        currentDate = formattedDate;
+      }
 
-        result.push(message);
+      result.push(message);
     }
 
     return result;
-}
+  }
 
   async sendMessage() {
     const currentUser = await this.userService.getCurrentUser();
@@ -215,115 +213,26 @@ export class ChatComponent {
         });
         return;
       }
-
-      this.selectedImagePaths.map((imagePath) => {
-        this.chatService.uploadImage(imagePath).then((res) => {
-          if (res) {
-            // this.chatService.getImageDownloadUrl(res).then((url) => {
-            //   console.log("chat-c---->", url)
-            // })
-          }
-        })
-      });
       this.store.dispatch(sendMessage({ senderId, receiverId, message, timestamp: new Date().toISOString(), isLoggedIn: true, imageUrls }));
       this.store.dispatch(fetchMessages({ senderId, receiverId }));
     }
     this.newMessage = '';
     this.selectedImagePaths = [];
     this.scrollToBottom();
-    //   (res) => {
-    //     console.log("res", res)
-    //     messagesCopy.push(sentMessage);
-    //     messagesCopy.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-    //     if (this.selectedImagePaths.length > 0) {
-    //       const uploadPromises = this.selectedImagePaths.map((imagePath) => { 
-    //         console.log('component : ',imagePath);
-    //         this.chatService.uploadImage(imagePath)
-    //         return imagePath;
-    //       });
-    //       Promise.all(uploadPromises)
-    //         .then((uploadedImageUrls) => {              
-    //           const messageWithImages: Message = {
-    //             ...sentMessage,
-    //             message: uploadedImageUrls,
-    //             isMedia: true
-    //           };
-    //           messagesCopy.push(messageWithImages);
-    //           this.updateMessages(messagesCopy);
-    //         })
-    //         .catch((error) => {
-    //           console.error("Error uploading images:", error);
-    //         });
-    //     } else {
-    //       this.updateMessages(messagesCopy);
-    //     }
-    //   },
-    //   (error) => {
-    //     console.error("Error sending message:", error);
-    //   }
-    // );
   }
+
   scrollToBottom() {
     const scrollView: ScrollView = this.myScrollView.nativeElement;
-    
+
     const scrollHeight = scrollView.scrollableHeight;
     scrollView.scrollToVerticalOffset(scrollHeight, false);
   }
-  
-  
+
   updateMessages(messages: Message[]) {
     this.messages = messages;
     this.newMessage = '';
     this.totalMessages = this.messages.length;
   }
-  // async sendMessage() {
-  //   const currentUser = await this.userService.getCurrentUser();
-  //   const senderId = currentUser.user.uid;
-  //   const receiverId = this.userId;
-  //   const newMessage = this.newMessage;
-  //   if (!newMessage.trim()) {
-  //     const options: SnackBarOptions = {
-  //       actionText: "Ok",
-  //       actionTextColor: "white",
-  //       snackText: "Empty message not allowed...!",
-  //       textColor: "white",
-  //       hideDelay: 3000,
-  //       backgroundColor: "#2f4b7a",
-  //       isRTL: false
-  //     };
-  //     const snackbar = new SnackBar();
-  //     snackbar.action(options).then((args) => {
-  //       return;
-  //     });
-  //     return; 
-  //   }
-  //   const messagesCopy = [...this.messages];
-
-  //   const sentMessage: Message = {
-  //     senderId: senderId,
-  //     receiverId: receiverId,
-  //     message: newMessage,
-  //     timestamp: new Date().toISOString(),
-  //     isLoggedIn: true,
-  //     seen: false,
-  //   };
-
-  //   messagesCopy.push(sentMessage);
-
-  //   messagesCopy.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-  //   this.chatService.sendMessage(senderId, receiverId, newMessage).subscribe(
-  //     () => {
-  //       this.messages = messagesCopy;
-  //       this.newMessage = '';
-  //       this.totalMessages = this.messages.length;
-  //     },
-  //     (error) => {
-  //       console.error("Error sending message:", error);
-  //     }
-  //   );
-  // }
 
   async updateReceivedMessageAsSeen(senderId: string, receiverId: string) {
     this.messages.forEach((message) => {
@@ -371,8 +280,12 @@ export class ChatComponent {
             })
             .then(function (selection) {
               selection.forEach(function (selectedImage) {
+                const imageData = {
+                  path: selectedImage.path,
+                  fileType: 'png'
+                }
                 that.selectedImagePath = selectedImage.path;
-                that.selectedImagePaths.push(selectedImage.path);
+                that.selectedImagePaths.push(imageData);
               });
             }).catch(function (e) {
               console.log(e);
@@ -412,7 +325,6 @@ export class ChatComponent {
               cancelButtonText: "Cancel"
             };
             showDialogConfirm(dialog).then((res) => {
-              console
               if (res) {
                 this.store.dispatch(deleteChatMessage({ userId, messageID }));
                 const options: SnackBarOptions = {

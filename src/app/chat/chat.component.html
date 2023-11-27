@@ -24,7 +24,7 @@
               </FlexboxLayout>
               <Label [text]="message.message" *ngIf="message.message" fontSize="12"></Label>
               <StackLayout *ngFor="let imageUrl of message.imageUrls">
-                <Image [src]="imageUrl" width="150" height="150" borderRadius="4" borderWidth="0.5" borderColor="gray"
+                <Image [src]="imageUrl?.url ? imageUrl.url : '~/images/img_placeholder.png'" width="150" height="150" borderRadius="4" borderWidth="0.5" borderColor="gray"
                   stretch="aspectFill" class="selected-image" marginTop="5"></Image>
               </StackLayout>
             </StackLayout>
@@ -63,7 +63,7 @@
         <StackLayout orientation="horizontal">
           <ng-container *ngFor="let imagePath of selectedImagePaths; let i = index">
             <GridLayout rows="auto *">
-              <Image [src]="imagePath" width="110" height="110" borderRadius="4" borderWidth="0.5" borderColor="gray"
+              <Image [src]="imagePath.path" width="110" height="110" borderRadius="4" borderWidth="0.5" borderColor="gray"
                 stretch="aspectFill" marginRight="20" marginLeft="5" android:marginTop="5" class="selected-image">
               </Image>
               <Label height="20" width="20" left="100" fontSize="10" backgroundColor="white" borderRadius="40"
