@@ -4,13 +4,14 @@ import { RouterExtensions } from "@nativescript/angular";
 import { UserService } from "../services/user.service";
 import { ChatService } from "../services/chat.service";
 import { Message } from "../state/class/message.class";
-import { Dialogs, ScrollView } from "@nativescript/core";
+import { Dialogs, ScrollView, isIOS, isAndroid } from "@nativescript/core";
 import * as imagePickerPlugin from '@nativescript/imagepicker';
 import { SnackBar, SnackBarOptions } from "@nstudio/nativescript-snackbar";
 import { Application } from "@nativescript/core";
 import { IConfirmDialog, showDialogConfirm } from '~/shared/models/confirm-dialog.model'
 import { Store } from "@ngrx/store";
 import { fetchMessages, sendMessage, deleteChatMessage, updateMessage } from "../state/actions/chat.actions";
+import { ImagePickerOptions, Mediafilepicker, VideoPickerOptions } from "nativescript-mediafilepicker";
 
 import { selectChatMessages } from '../state/selectors/chat.selector';
 import { Subject, takeUntil } from "rxjs";
@@ -57,6 +58,7 @@ export class ChatComponent {
     "November",
     "December"
   ];
+  isAndroid: boolean = false;
   @ViewChild("myScrollView", { static: false }) myScrollView: ElementRef<ScrollView>;
   private ngUnsubscribe$ = new Subject();
   constructor(private route: ActivatedRoute,
@@ -64,6 +66,7 @@ export class ChatComponent {
     private userService: UserService,
     private chatService: ChatService,
     private store: Store,) {
+    this.isAndroid = isAndroid;
 
     this.route.params.subscribe(params => {
       this.userName = params.userName;
@@ -291,9 +294,45 @@ export class ChatComponent {
               console.log(e);
             });
         } else if (result === "Video") {
-          // Handle video selection if needed
+          console.log("video")
+          this.selectVideoFromPhotoLibrary();
         }
       });
+  }
+
+  selectVideoFromPhotoLibrary(capture: boolean = false) {
+    let allowedVideoQualities = [];
+
+    if (isIOS) {
+      allowedVideoQualities = [AVCaptureSessionPreset1920x1080, AVCaptureSessionPresetHigh];
+    }
+
+    let options: VideoPickerOptions = {
+      android: {
+        isCaptureMood: false,
+        isNeedCamera: true,
+        maxNumberFiles: 2,
+        isNeedFolderList: true,
+        maxDuration: 20,
+
+      },
+      ios: {
+        isCaptureMood: false,
+        videoMaximumDuration: 10,
+        allowedVideoQualities: allowedVideoQualities
+      }
+    };
+    let mediafilepicker = new Mediafilepicker();
+    mediafilepicker.openVideoPicker(options);
+
+    mediafilepicker.on("getFiles", function (res) {
+      let results = res.object.get('results');
+      console.log(results);
+    });
+    mediafilepicker.on("error", function (res) {
+      let error = res.object.get('msg');
+      console.error(error);
+    });
   }
 
   removeImage(index: number) {

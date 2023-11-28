@@ -29,6 +29,7 @@
     "@nstudio/nativescript-snackbar": "^2.1.0",
     "moment-timezone": "^0.5.43",
     "nativescript-feedback": "^2.0.0",
+    "nativescript-mediafilepicker": "^4.0.2",
     "rxjs": "~7.8.0",
     "zone.js": "~0.13.0"
   },
