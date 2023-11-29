@@ -3,7 +3,7 @@ import { ActivatedRoute } from "@angular/router";
 import { RouterExtensions } from "@nativescript/angular";
 import { UserService } from "../services/user.service";
 import { ChatService } from "../services/chat.service";
-import { Message } from "../state/class/message.class";
+import { MessageModel } from "../state/class/message.class";
 import { Dialogs, ScrollView, isIOS, isAndroid } from "@nativescript/core";
 import * as imagePickerPlugin from '@nativescript/imagepicker';
 import { SnackBar, SnackBarOptions } from "@nstudio/nativescript-snackbar";
@@ -58,7 +58,9 @@ export class ChatComponent {
     "November",
     "December"
   ];
+  channelId: string;
   isAndroid: boolean = false;
+  currentUserId: any;
   @ViewChild("myScrollView", { static: false }) myScrollView: ElementRef<ScrollView>;
   private ngUnsubscribe$ = new Subject();
   constructor(private route: ActivatedRoute,
@@ -77,15 +79,16 @@ export class ChatComponent {
   }
   async ngOnInit() {
     const currentUser = await this.userService.getCurrentUser();
-    const senderId = currentUser.user.uid;
+    this.currentUserId = currentUser.user.uid;
     const receiverId = this.userId;
     this.route.params.subscribe((params) => {
       this.userName = params.userName;
       this.userId = params.userId;
-
+      this.channelId = params.conversationId;
+      const channelId = params.conversationId;
       this.messages = [];
+      this.store.dispatch(fetchMessages({ channelId }))
     });
-    this.store.dispatch(fetchMessages({ senderId, receiverId }))
     this.loadChatMessages();
   }
 
@@ -116,17 +119,17 @@ export class ChatComponent {
       this.isLoading = true;
       this.store.select(selectChatMessages)
         .pipe(takeUntil(this.ngUnsubscribe$))
-        .subscribe((messages: Message[]) => {
+        .subscribe((messages: any) => {
           const totalMessages = messages.length;
           this.totalMessages = totalMessages;
 
-          const updatedMessages = messages.map((message: Message) => ({
+          const updatedMessages = messages.map((message) => ({
             ...message,
             seen: message.receiverId !== senderId ? true : message.seen,
           }));
 
           const messageData = updatedMessages.sort((a, b) => {
-            return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           });
 
           this.messages = this.addDateSeparators(messageData);
@@ -142,13 +145,13 @@ export class ChatComponent {
     }
   }
 
-  addDateSeparators(messages: Message[]): (Message | { dateSeparator: string })[] {
-    const result: (Message | { dateSeparator: string })[] = [];
+  addDateSeparators(messages: any[]): ({ dateSeparator: string })[] {
+    const result: ({ dateSeparator: string })[] = [];
 
     let currentDate = "";
 
     for (const message of messages) {
-      const messageDate = new Date(message.timestamp);
+      const messageDate = new Date(message.createdAt);
       const today = new Date();
 
       let formattedDate: string;
@@ -171,57 +174,44 @@ export class ChatComponent {
   }
 
   async sendMessage() {
+    this.isLoading = true;
     const currentUser = await this.userService.getCurrentUser();
     const senderId = currentUser.user.uid;
-    const userId = currentUser.user.uid;
-    const receiverId = this.userId;
     const message = this.newMessage;
-    const imageUrls = this.selectedImagePaths;
-    const messageID = this.editMessageData?.id
+    const messageID = this.editMessageData?.messageId
+    const channelId = this.channelId;
+    if (!message.trim() && this.selectedImagePaths.length === 0) {
+      this.snackBar('Empty message not allowed...!')
+      return;
+    }
     if (this.isEdited) {
       const updatedMessageObject = {
         ...this.editMessageData,
-        message: message,
+        text: message,
         isEdited: true
       };
-      this.store.dispatch(updateMessage({ userId, messageID, updatedMessageObject }))
-      const options: SnackBarOptions = {
-        actionText: "Ok",
-        actionTextColor: "white",
-        snackText: "Message updated successfully...!",
-        textColor: "white",
-        hideDelay: 3000,
-        backgroundColor: "#2f4b7a",
-        isRTL: false,
-      };
-      const snackbar = new SnackBar();
-      snackbar.action(options).then((args) => {
-        return;
-      });
+      this.store.dispatch(updateMessage({ channelId, messageID, updatedMessageObject }))
       this.isEdited = false;
+      this.snackBar('Message updated successfully...!')
     } else {
-      if (!message.trim() && this.selectedImagePaths.length === 0) {
-        const options: SnackBarOptions = {
-          actionText: "Ok",
-          actionTextColor: "white",
-          snackText: "Empty message not allowed...!",
-          textColor: "white",
-          hideDelay: 3000,
-          backgroundColor: "#2f4b7a",
-          isRTL: false,
-        };
-        const snackbar = new SnackBar();
-        snackbar.action(options).then((args) => {
-          return;
-        });
-        return;
+      const messages: MessageModel = {
+        text: message,
+        medias: this.selectedImagePaths,
+        creator: {
+          id: senderId,
+          firstName: '',
+          lastName: '',
+        },
+        createdAt: new Date().toISOString(),
+        type: 'MESSAGE',
+        messageId: ''
       }
-      this.store.dispatch(sendMessage({ senderId, receiverId, message, timestamp: new Date().toISOString(), isLoggedIn: true, imageUrls }));
-      this.store.dispatch(fetchMessages({ senderId, receiverId }));
+      this.store.dispatch(sendMessage({ channelId, messages }));
     }
     this.newMessage = '';
     this.selectedImagePaths = [];
     this.scrollToBottom();
+    this.isLoading = false;
   }
 
   scrollToBottom() {
@@ -231,10 +221,20 @@ export class ChatComponent {
     scrollView.scrollToVerticalOffset(scrollHeight, false);
   }
 
-  updateMessages(messages: Message[]) {
-    this.messages = messages;
-    this.newMessage = '';
-    this.totalMessages = this.messages.length;
+  snackBar(snackMessage) {
+    const options: SnackBarOptions = {
+      actionText: "Ok",
+      actionTextColor: "white",
+      snackText: snackMessage,
+      textColor: "white",
+      hideDelay: 3000,
+      backgroundColor: "#2f4b7a",
+      isRTL: false,
+    };
+    const snackbar = new SnackBar();
+    snackbar.action(options).then((args) => {
+      return;
+    });
   }
 
   async updateReceivedMessageAsSeen(senderId: string, receiverId: string) {
@@ -245,9 +245,9 @@ export class ChatComponent {
     });
   }
 
-  getMessageText(message: Message): string {
-    if (message.timestamp) {
-      const messageTime = new Date(message.timestamp);
+  getMessageText(message: any): string {
+    if (message.createdAt) {
+      const messageTime = new Date(message.createdAt);
       const hours = messageTime.getHours();
       const minutes = messageTime.getMinutes();
       const amPm = hours >= 12 ? 'PM' : 'AM';
@@ -294,7 +294,6 @@ export class ChatComponent {
               console.log(e);
             });
         } else if (result === "Video") {
-          console.log("video")
           this.selectVideoFromPhotoLibrary();
         }
       });
@@ -340,11 +339,10 @@ export class ChatComponent {
   }
 
   async onLongPress(args: UILongPressGestureRecognizer, item: any) {
-    const currentUser = await this.userService.getCurrentUser();
-    const userId = currentUser.user.uid;
-    const messageID = item?.id;
+    const messageID = item?.messageId;
+    const channelId = this.channelId;
 
-    if (item?.isLoggedIn) {
+    if (item?.creator?.id === this.currentUserId) {
       Dialogs
         .action({
           message: "Select an action",
@@ -353,7 +351,7 @@ export class ChatComponent {
         })
         .then((result) => {
           if (result === "Edit") {
-            this.newMessage = item?.message;
+            this.newMessage = item?.text;
             this.editMessageData = item;
             this.isEdited = true
           } else if (result === "Delete") {
@@ -365,20 +363,8 @@ export class ChatComponent {
             };
             showDialogConfirm(dialog).then((res) => {
               if (res) {
-                this.store.dispatch(deleteChatMessage({ userId, messageID }));
-                const options: SnackBarOptions = {
-                  actionText: "Ok",
-                  actionTextColor: "white",
-                  snackText: "Message deleted successfully...!",
-                  textColor: "white",
-                  hideDelay: 3000,
-                  backgroundColor: "#2f4b7a",
-                  isRTL: false,
-                };
-                const snackbar = new SnackBar();
-                snackbar.action(options).then((args) => {
-                  return;
-                });
+                this.store.dispatch(deleteChatMessage({ channelId, messageID }));
+                this.snackBar('Message deleted successfully...!');
               }
             })
           }

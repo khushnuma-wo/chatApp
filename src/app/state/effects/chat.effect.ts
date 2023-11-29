@@ -10,8 +10,8 @@ export class ChatEffects {
   sendMessage$ = createEffect(() =>
     this.actions$.pipe(
       ofType(sendMessage),
-      mergeMap(({ senderId, receiverId, message, imageUrls }) =>
-        this.chatService.sendMessage(senderId, receiverId, message, imageUrls).pipe(
+      mergeMap(({ channelId, messages }) =>
+        this.chatService.sendMessage(channelId, messages).pipe(
           map((res) => {
             return { type: 'MessageSentSuccess' };
           }),
@@ -27,8 +27,8 @@ deleteChatMessage$ = createEffect(() =>
   this.actions$.pipe(
     ofType(deleteChatMessage),
     tap((res) => console.log('Delete effect triggered!')),
-    mergeMap(({ userId, messageID }) =>
-    from(this.chatService.deleteMessage(userId, messageID)).pipe(
+    mergeMap(({ channelId, messageID }) =>
+    from(this.chatService.deleteMessage(channelId, messageID)).pipe(
       map((res) => {
         return { type: 'MessageDeleteSuccess' };
       }),
@@ -43,8 +43,8 @@ deleteChatMessage$ = createEffect(() =>
   fetchMessages$ = createEffect(() =>
     this.actions$.pipe(
       ofType(fetchMessages),
-      switchMap(({ senderId, receiverId }) =>
-        this.chatService.fetchMessages(senderId, receiverId).pipe(
+      switchMap(({ channelId }) =>
+        this.chatService.fetchMessages(channelId).pipe(
           map((messages) => fetchMessagesSuccess({ messages })),
           catchError((error) => of(fetchMessagesFailure({ error })))
         )
@@ -54,8 +54,8 @@ deleteChatMessage$ = createEffect(() =>
   updateMessage$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateMessage),
-      mergeMap(({ userId, messageID, updatedMessageObject }) =>
-        this.chatService.updateMessage(userId, messageID, updatedMessageObject).pipe(
+      mergeMap(({ channelId, messageID, updatedMessageObject }) =>
+        this.chatService.updateMessage(channelId, messageID, updatedMessageObject).pipe(
           map(() => {
             return { type: 'MessageUpdateSuccess' };
           }),

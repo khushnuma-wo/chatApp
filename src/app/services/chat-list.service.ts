@@ -1,7 +1,6 @@
 import { firebase } from '@nativescript/firebase-core';
 import '@nativescript/firebase-firestore';
 import { Injectable } from '@angular/core';
-import { Message } from '../state/class/message.class';
 
 @Injectable()
 export class ChatListService {
@@ -57,7 +56,7 @@ export class ChatListService {
         const messagesRef = firebase().firestore().collection(`users/${userUid}/messages`);
         const messageCollection = await messagesRef.get();
         const hasMessagesWithCurrentUser = messageCollection.docs.some((messageDoc) => {
-          const messageData = messageDoc.data() as Message;
+          const messageData = messageDoc.data() as any;
           this.lastReceivedMessage = messageData;
           // console.log(this.lastReceivedMessage);
           
@@ -72,7 +71,7 @@ export class ChatListService {
         if (hasMessagesWithCurrentUser) {
           usersWithMessageCollection.push(userData);
           const newMessagesCount = messageCollection.docs.filter((messageDoc) => {
-            const messageData = messageDoc.data() as Message;
+            const messageData = messageDoc.data() as any;
             return messageData.isLoggedIn;
           }).length;
 
@@ -93,7 +92,7 @@ export class ChatListService {
     const messagesRef = firebase().firestore().collection(`users/${receiverId}/messages`);
     messagesRef.where('senderId', '==', receiverId).get().then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
-        const messageData = doc.data() as Message;
+        const messageData = doc.data() as any;
         if (!messageData.seen) {
           doc.ref.update({ seen: true });
           this.newMessagesCount[receiverId] = 0;

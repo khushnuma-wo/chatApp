@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { firebase } from '@nativescript/firebase-core';
 import '@nativescript/firebase-firestore';
-import { EMPTY, Observable, Subject, catchError, concatAll, finalize, forkJoin, from, map, mergeMap, of, throwError, toArray } from 'rxjs';
-import { Message } from '../state/class/message.class';
+import { EMPTY, Observable, Subject, async, catchError, concatAll, finalize, forkJoin, from, map, mergeMap, of, throwError, toArray } from 'rxjs';
 import '@nativescript/firebase-storage';
 import { UserService } from './user.service';
 
@@ -10,67 +9,92 @@ import { UserService } from './user.service';
 export class ChatService {
   constructor(private userService: UserService) { }
 
-  sendMessage(senderId: string, receiverId: string, message: string, imageUrls?: any): Observable<void> {
-    const timestamp = new Date().toISOString();
-    const messageData: Message = {
-      senderId,
-      receiverId,
-      message,
-      timestamp,
-      isLoggedIn: true,
-      seen: false,
-      imageUrls
-    };
-  
-    const messageID = firebase().firestore().collection('messages').doc().id;
-    const senderPath = `users/${senderId}/messages/${messageID}`;
-    const receiverPath = `users/${receiverId}/messages/${messageID}`;
-  
-    if (!imageUrls || !imageUrls.length) {
-      // No media to upload, directly set the message data in the batch
-      const batch = firebase().firestore().batch();
-      batch.set(firebase().firestore().doc(senderPath), messageData);
-      batch.set(firebase().firestore().doc(receiverPath), { ...messageData, isLoggedIn: false });
-  
-      return from(batch.commit()).pipe(
-        catchError((error) => {
-          console.error('Error:', error);
-          return EMPTY; // Use EMPTY instead of of(undefined)
-        })
-      );
+  sendMessage(channelId, messageObj): Observable<void> {
+    firebase().firestore().collection('conversations').doc(channelId).update({})
+    if (!messageObj?.medias || messageObj.medias.length === 0) {
+      const updatedMessageData = { ...messageObj, medias: [] };
+
+      return this.addMessageToFirestore(channelId, updatedMessageData);
     } else {
-      // Upload media files
-      const mediaUploadObservables = imageUrls.map((media) => this.uploadMediaFiles(messageID, media));
-  
-      return forkJoin(mediaUploadObservables).pipe(
-        mergeMap((mediaUploadResults: any[]) => {
-          if (mediaUploadResults.length === 0) {
-            console.log('No mediaUploadResults, not sending the message.');
-            return EMPTY; // Use EMPTY instead of throwError
-          }
-  
-          const updatedMessageData: Message = {
-            ...messageData,
-            imageUrls: mediaUploadResults,
-          };
-          console.log("updatedMessageData", updatedMessageData);
-  
-          const batch = firebase().firestore().batch();
-          batch.set(firebase().firestore().doc(senderPath), updatedMessageData);
-          batch.set(firebase().firestore().doc(receiverPath), { ...updatedMessageData, isLoggedIn: false });
-  
-          // Commit the batch to update Firestore documents.
-          return from(batch.commit());
-        }),
-        catchError((error) => {
-          console.error('Error:', error);
+
+    const mediaUploadObservables = messageObj.medias.map((media) => this.uploadMediaFiles(channelId, media));
+
+    return forkJoin(mediaUploadObservables).pipe(
+      mergeMap((mediaUploadResults: any[]) => {
+        if (mediaUploadResults.length === 0) {
+          console.log('No mediaUploadResults, not sending the message.');
           return EMPTY;
-        })
-      );
+        }
+        console.log("mediaUploadResults", mediaUploadResults)
+        const updatedMessageData = { ...messageObj, medias: mediaUploadResults };
+
+        return this.addMessageToFirestore(channelId, updatedMessageData);
+      }),
+      catchError((error) => {
+        console.error('Error uploading media:', error);
+        return EMPTY;
+      })
+    );
     }
   }
-  
 
+  private addMessageToFirestore(channelId: string, messageData: any): Observable<void> {
+    return from(
+      firebase()
+        .firestore()
+        .collection('conversations')
+        .doc(channelId)
+        .collection('messages')
+        .add(messageData)
+    ).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error('Error adding message:', error);
+        return EMPTY;
+      })
+    );
+  }
+
+  // createChannel(channelObj): Observable<any> {
+  //   return new Observable((observer) => {
+  //     const collectionRef = firebase().firestore().collection('conversations');
+  
+  //     collectionRef.add(channelObj).then((documentRef) => {
+  //       const channelId = documentRef.id;
+  //       collectionRef.doc(channelId).update({ id: channelId }).then(() => {
+  //         observer.next({ id: channelId, ...channelObj });
+  //         observer.complete();
+  //       }).catch((error) => {
+  //         observer.error(error);
+  //         observer.complete();
+  //       });
+  //     }).catch((error) => {
+  //       observer.error(error);
+  //       observer.complete();
+  //     });
+  //   });
+  // }
+  createChannel(channelObj) {
+    firebase().firestore().collection('conversations').add(channelObj).then(async (documentRef) => {
+      await firebase().firestore().collection('conversations').doc(documentRef.id).update({ id: documentRef.id });
+    });
+  }
+
+  getConversation(senderId): Observable<any> {
+    const collectionRef = firebase().firestore().collection('conversations');
+
+    return new Observable((observer) => {
+      collectionRef.where("members", "array-contains", senderId)
+        .onSnapshot((querySnapshot) => {
+          const conversations = [];
+          querySnapshot.forEach((doc) => {
+            conversations.push({ id: doc.id, ...doc.data() });
+          });
+          observer.next(conversations);
+          observer.complete();
+        })
+    });
+  }
 
   private uploadMediaFiles(messageID: string, media: any): Observable<any> {
     let remoteFullPath = '';
@@ -100,6 +124,7 @@ export class ChatService {
                     url,
                     fileType: media.fileType
                   };
+                  console.log("result", result)
                   return resolve(result);
                 })
                 .catch((urlError) => {
@@ -113,42 +138,38 @@ export class ChatService {
     }
   }
 
-  fetchMessages(senderId: string, receiverId: string): Observable<Message[]> {
-    const messagesRef = firebase().firestore().collection('users').doc(senderId).collection('messages');
-    const messagesSubject = new Subject<Message[]>();
-    const unsubscribe = messagesRef
-      .where('senderId', 'in', [senderId, receiverId])
-      .where('receiverId', 'in', [senderId, receiverId])
-      .onSnapshot(
-        (querySnapshot) => {
-          const messages: Message[] = [];
-          querySnapshot.forEach((doc) => {
-            const data = {
-              ...doc.data() as Message,
-              id: doc.id
-            };
-            messages.push(data);
-          });
-          messagesSubject.next(messages);
-        },
-        (error) => {
-          messagesSubject.error(error);
+  fetchMessages(channelId: string): Observable<any[]> {
+    const messagesRef = firebase().firestore().collection('conversations').doc(channelId).collection('messages').orderBy("createdAt", "desc");
+  
+    return new Observable((observer) => {
+      messagesRef.onSnapshot((querySnapshot) => {
+        const messages = [];
+        const latestMessageDoc = querySnapshot.docs[0];
+  
+        querySnapshot.forEach((doc) => {
+          messages.push({ ...doc.data(), id: doc.id, messageId: doc.id });
+        });
+        if (latestMessageDoc) {
+          const latestObj = {
+            createdAt: latestMessageDoc.data().createdAt,
+            messageId: latestMessageDoc.id,
+            text: latestMessageDoc.data().text,
+            type: "MESSAGE"
+          };
+  
+          firebase().firestore().collection('conversations').doc(channelId).update({ latest: latestObj });
         }
-      );
-
-    return messagesSubject.asObservable().pipe(
-      catchError((error) => {
-        console.error('Error fetching messages:', error);
-        return [];
-      }),
-      finalize(() => {
-        unsubscribe();
-      })
-    );
+  
+        observer.next(messages);
+        observer.complete();
+      });
+    });
   }
+  
 
-  deleteMessage(userId: string, messageID: string): Promise<void> {
-    return firebase().firestore().collection("users").doc(userId).collection("messages").doc(messageID).delete()
+  deleteMessage(channelId: string, messageID: string): Promise<void> {
+    console.log("channelId", channelId, messageID)
+    return firebase().firestore().collection("conversations").doc(channelId).collection("messages").doc(messageID).delete()
       .then(() => {
         console.log("Message deleted successfully");
       })
@@ -158,9 +179,9 @@ export class ChatService {
       });
   }
 
-  updateMessage(userId: string, messageID: string, messageData: any): Observable<void> {
+  updateMessage(channelId: string, messageID: string, messageData: any): Observable<void> {
     return from(
-      firebase().firestore().collection("users").doc(userId).collection("messages").doc(messageID).update(messageData)
+      firebase().firestore().collection("conversations").doc(channelId).collection("messages").doc(messageID).update(messageData)
     ).pipe(
       catchError((error) => {
         console.error("Error updating message:", error);
@@ -168,4 +189,5 @@ export class ChatService {
       })
     );
   }
+  
 }

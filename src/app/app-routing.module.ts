@@ -7,7 +7,7 @@ const routes: Routes = [
   { path: "signup", loadChildren: () => import("./auth/signup/signup.module").then(m => m.SignupModule) },
   { path: "login", loadChildren: () => import("./auth/login/login.module").then(m => m.LoginModule) },
   { path: "home", loadChildren: () => import("./home/home.module").then(m => m.HomeModule) },
-  { path: "chat/:userName/:userId", loadChildren: () => import("./chat/chat.module").then(m => m.ChatModule) },
+  { path: "chat/:userName/:userId/:conversationId", loadChildren: () => import("./chat/chat.module").then(m => m.ChatModule) },
   { path: "chat-list", loadChildren: () => import("./chat-list/chat-list.module").then(m => m.ChatListModule) },
   { path: "forgot-password", loadChildren: () => import("./auth/forgot-password/forgot-password.module").then(m => m.ForgotPasswordModule) },
 ]

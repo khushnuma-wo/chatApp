@@ -12,30 +12,37 @@
     <ScrollView row="0" height="100%" #myScrollView>
       <StackLayout class="message-container" flexDirection="column-reverse">
         <ng-container *ngFor="let message of messages">
-          <FlexboxLayout [ngClass]="{'message-row-right': message.isLoggedIn, 'message-row-left': !message.isLoggedIn}"
+          <FlexboxLayout
+            [ngClass]="{'message-row-right': message?.creator?.id === currentUserId, 'message-row-left': message?.creator?.id !== currentUserId}"
             *ngIf="!message.dateSeparator">
-            <Image src="~/images/man2.png" width="35" height="35" class="image" *ngIf="!message.isLoggedIn"></Image>
-            <StackLayout [ngClass]="{'right-message': message.isLoggedIn, 'left-message': !message.isLoggedIn}"
+            <Image src="~/images/man2.png" width="35" height="35" class="image"
+              *ngIf="message?.creator?.id !== currentUserId"></Image>
+            <StackLayout
+            boxShadow="rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px"
+              [ngClass]="{'right-message': message?.creator?.id === currentUserId, 'left-message': message?.creator?.id !== currentUserId}"
               (longPress)="onLongPress($event, message)" padding="5 20 5 10"
-              [borderRadius]="message.isLoggedIn ? '10 10 0 10' : '10 10 10 0'">
+              [borderRadius]="message?.creator?.id === currentUserId ? '10 10 0 10' : '10 10 10 0'">
               <FlexboxLayout justifyContent="space-between">
-                <Label [text]="userName" *ngIf="!message.isLoggedIn" color="orange" fontSize="12"
+                <Label [text]="userName" *ngIf="message?.creator?.id !== currentUserId" color="orange" fontSize="12"
                   fontWeight="bold"></Label>
               </FlexboxLayout>
-              <Label [text]="message.message" *ngIf="message.message" fontSize="12"></Label>
-              <StackLayout *ngFor="let imageUrl of message.imageUrls">
-                <Image [src]="imageUrl?.url ? imageUrl.url : '~/images/img_placeholder.png'" width="150" height="150" borderRadius="4" borderWidth="0.5" borderColor="gray"
-                  stretch="aspectFill" class="selected-image" marginTop="5"></Image>
+              <Label [text]="message.text" *ngIf="message.text" fontSize="12"></Label>
+              <StackLayout *ngFor="let imageUrl of message.medias">
+                <Image [src]="imageUrl?.url ? imageUrl.url : '~/images/img_placeholder.png'" width="150" height="150"
+                  borderRadius="4" borderWidth="0.5" borderColor="gray" stretch="aspectFill" class="selected-image"
+                  marginTop="5"></Image>
               </StackLayout>
             </StackLayout>
           </FlexboxLayout>
-          <FlexboxLayout [horizontalAlignment]="message.isLoggedIn ? 'right' : 'left'" alignItems="center"
-            padding="0 0 15 0">
-            <Label [text]="getMessageText(message)" [marginLeft]="!message.isLoggedIn ? '45' : '0'" fontSize="10"
-              [ngClass]="{'right-message-time': message.isLoggedIn, 'left-message-time': !message.isLoggedIn}"
+          <FlexboxLayout [horizontalAlignment]="message?.creator?.id === currentUserId ? 'right' : 'left'"
+            alignItems="center" padding="0 0 15 0">
+            <Label [text]="getMessageText(message)" [marginLeft]="message?.creator?.id !== currentUserId ? '45' : '0'"
+              fontSize="10"
+              [ngClass]="{'right-message-time': message?.creator?.id === currentUserId, 'left-message-time': message?.creator?.id !== currentUserId}"
               color="#57646E"></Label>
-              <Label *ngIf="message.isEdited" text="  (edited) " color="#57646E" fontSize="10"></Label>
-            <StackLayout *ngIf="message.isLoggedIn" [margin]="message.isLoggedIn ? '0 5 0 5' : '0'">
+            <Label *ngIf="message.isEdited" text="  (edited) " color="#57646E" fontSize="10"></Label>
+            <StackLayout *ngIf="message?.creator?.id === currentUserId"
+              [margin]="message?.creator?.id === currentUserId ? '0 5 0 5' : '0'">
               <ng-container *ngIf="message.seen || message.receiverOpened">
                 <Image src="~/images/double-tick.png" width="15" height="15"></Image>
               </ng-container>
@@ -63,8 +70,9 @@
         <StackLayout orientation="horizontal">
           <ng-container *ngFor="let imagePath of selectedImagePaths; let i = index">
             <GridLayout rows="auto *">
-              <Image [src]="imagePath.path" width="110" height="110" borderRadius="4" borderWidth="0.5" borderColor="gray"
-                stretch="aspectFill" marginRight="20" marginLeft="5" android:marginTop="5" class="selected-image">
+              <Image [src]="imagePath.path" width="110" height="110" borderRadius="4" borderWidth="0.5"
+                borderColor="gray" stretch="aspectFill" marginRight="20" marginLeft="5" android:marginTop="5"
+                class="selected-image">
               </Image>
               <Label height="20" width="20" left="100" fontSize="10" backgroundColor="white" borderRadius="40"
                 horizontalAlignment="right" text="✖️" row="0" col="1" class="close-button" (tap)="removeImage(i)"
@@ -74,34 +82,18 @@
         </StackLayout>
       </ScrollView>
     </StackLayout>
-    <StackLayout row="2"  borderTopWidth="1" borderTopColor="#ededed" class="messageBox">
+    <StackLayout row="2" borderTopWidth="1" borderTopColor="#ededed" class="messageBox">
       <GridLayout rows="*, *">
         <!-- <StackLayout row="0" *ngIf="isEdited" (tap)="cancelEditedMessage()">
           <Label text="Cancel" color="blue" fontWeight="bold" col="0" marginLeft="70%"></Label>
         </StackLayout> -->
 
-        <FlexBoxLayout
-            *ngIf="isEdited"
-            justifyContent="space-between"
-            borderBottomWidth="1"
-            borderBottomColor="#ededed"
-            row="0"
-            padding="6 20"
-        >
-            <Label
-                text="Editing message"
-                fontSize="14"
-            >
-            </Label>
-            <Label
-                text="Cancel"
-                fontSize="14"
-                fontWeight="500"
-                color="#0F71EB"
-                (tap)="cancelEditedMessage()"
-                col="0"
-            >
-            </Label>
+        <FlexBoxLayout *ngIf="isEdited" justifyContent="space-between" borderBottomWidth="1" borderBottomColor="#ededed"
+          row="0" padding="6 20">
+          <Label text="Editing message" fontSize="14" color="black">
+          </Label>
+          <Label text="Cancel" fontSize="14" fontWeight="500" color="#0F71EB" (tap)="cancelEditedMessage()" col="0">
+          </Label>
         </FlexBoxLayout>
         <StackLayout row="1" marginTop="5" padding="10 15">
           <GridLayout rows="auto" columns="auto * auto">

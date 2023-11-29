@@ -22,6 +22,7 @@ export class UserService {
           userUid,
           name: name,
           email: email,
+          displayName: name
         })
 
       this.currentUser = authResult;
@@ -37,7 +38,7 @@ export class UserService {
   async login(email: string, password: string): Promise<boolean> {
     try {
       const authResult = await firebase().auth().signInWithEmailAndPassword(email, password)
-
+      console.log(authResult, "authResult")
       this.currentUser = authResult;
       this.isAuthenticated = true;
       ApplicationSettings.setString("currentUser", JSON.stringify(authResult));

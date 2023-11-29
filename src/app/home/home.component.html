@@ -1,5 +1,5 @@
 <StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
-  <ActionBar title="Chats" class="action-bar">
+  <ActionBar title="ChatVista" class="action-bar" letterSpacing="0.5" fontWeight="bold">
     <ActionItem position="left">
       <GridLayout width="50">
         <Image width="30" height="30" android:marginBottom="3" src="~/images/power.png" (tap)="logout()"></Image>
@@ -9,7 +9,8 @@
       <FlexBoxLayout justifyContent="space-between">
         <AbsoluteLayout alignItems="center" marginRight="10">
           <Image width="30" height="30" android:marginBottom="3" src="~/images/chat.png" (tap)="chatList()"></Image>
-          <Label fontWeight="800" class="chatLength" color="#0F71EB" marginTop="-18" marginLeft="20" [text]="userLength" textAlign="center"></Label>
+          <Label fontWeight="800" class="chatLength" color="#0F71EB" marginTop="-18" marginLeft="20" [text]="userLength"
+            textAlign="center"></Label>
         </AbsoluteLayout>
       </FlexBoxLayout>
     </ActionItem>
@@ -19,7 +20,7 @@
   <GridLayout marginTop="5">
     <ListView [items]="allUsers" height="100%">
       <ng-template let-item="item">
-        <GridLayout columns="auto, *" borderRadius="10" (tap)="onChat(item)">
+        <GridLayout columns="auto, *, *" borderRadius="10" (tap)="onChat(item)">
           <StackLayout height="70">
             <Image [src]="item.profileImage" class="profile-img" stretch="aspectFill"></Image>
           </StackLayout>
@@ -28,9 +29,14 @@
               <Label col="1" margin="0 0" color="grey" fontSize="18" [text]="item.name"></Label>
             </GridLayout>
             <GridLayout columns="auto" rows="auto">
-              <Label col="1" color="grey" fontSize="12" text="Hello, How are you?"></Label>
+              <Label col="1" color="grey" fontSize="12">
+                {{ item?.latest?.text ? item?.latest?.text : 'Write a message' }}
+              </Label>
             </GridLayout>
           </StackLayout>
+          <StackLayout col="2" row="0" verticalAlignment="center" horizontalAlignment="right">
+          <Label [text]="getMessageText(item?.latest)" color="grey" *ngIf="item?.latest"></Label>
+        </StackLayout>
         </GridLayout>
       </ng-template>
     </ListView>
