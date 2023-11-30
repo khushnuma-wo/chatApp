@@ -3,7 +3,7 @@ import { ApplicationSettings } from "@nativescript/core";
 import { firebase } from '@nativescript/firebase-core';
 import '@nativescript/firebase-firestore';
 import '@nativescript/firebase-auth';
-import { Observable, from, map } from "rxjs";
+import { Observable, forkJoin, from, map, mergeMap } from "rxjs";
 
 @Injectable()
 export class UserService {
@@ -13,21 +13,23 @@ export class UserService {
     this.loadUserState();
   }
 
-  async signup(name: string, email: string, password: string) {
+  async signup(firstName: string, lastName: string, email: string, password: string, selectedImage: string) {
     try {
       const authResult = await firebase().auth().createUserWithEmailAndPassword(email, password);
       const userUid = authResult.user.uid;
+
+      const imageResult = await this.uploadMediaFiles(userUid, selectedImage);
       await firebase().firestore().collection('users').doc(userUid)
         .set({
           userUid,
-          name: name,
-          email: email,
-          displayName: name
-        })
+          firstName,
+          lastName,
+          email,
+          profileImage: imageResult
+        });
 
       this.currentUser = authResult;
       this.isAuthenticated = true;
-
       ApplicationSettings.setString("currentUser", JSON.stringify(authResult));
     } catch (error) {
       console.log("User creation error:", error);
@@ -35,20 +37,56 @@ export class UserService {
     }
   }
 
+  private uploadMediaFiles(messageID: string, media: any): Promise<string> {
+    if (media) {
+      const remoteFullPath = `users/images/${messageID}/photo-${Math.random()}-${Date.now()}.png`;
+
+      return new Promise<string>((resolve, reject) => {
+        const reference = firebase().storage().ref(remoteFullPath);
+        const task = reference.putFile(media);
+
+        if (task) {
+          task.on('state_changed' as any,
+            (taskSnapshot) => {
+              console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+            },
+            (error) => {
+              console.error('Error during upload:', error);
+              reject(error);
+            },
+            () => {
+              firebase().storage().ref(remoteFullPath).getDownloadURL()
+                .then((url) => {
+                  resolve(url);
+                })
+                .catch((urlError) => {
+                  console.error('Error getting download URL:', urlError);
+                  reject(urlError);
+                });
+            }
+          );
+        } else {
+          reject(new Error('Upload task is null or undefined'));
+        }
+      });
+    } else {
+      return Promise.resolve("");
+    }
+  }
+
   async login(email: string, password: string): Promise<boolean> {
     try {
       const authResult = await firebase().auth().signInWithEmailAndPassword(email, password)
-      console.log(authResult, "authResult")
       this.currentUser = authResult;
       this.isAuthenticated = true;
       ApplicationSettings.setString("currentUser", JSON.stringify(authResult));
-      // console.log('User logged in:', this.currentUser);
       return true;
     } catch (error) {
       console.log("Login error:", error);
       throw error;
     }
   }
+
   async logout(): Promise<void> {
     try {
       await firebase().auth().signOut();
@@ -60,6 +98,7 @@ export class UserService {
       throw error;
     }
   }
+
   getSingleUser(userUid: string): Promise<any> {
     return firebase().firestore().collection('users').doc(userUid).get()
       .then((doc) => {
@@ -87,7 +126,7 @@ export class UserService {
       throw error;
     }
   }
-  
+
   async signUpWithGoogle(): Promise<void> {
     try {
       // const provider = new GoogleAuthProvider();
@@ -122,6 +161,7 @@ export class UserService {
       throw error;
     }
   }
+
   async getAllUsers() {
     try {
       const querySnapshot = await firebase().firestore().collection('users').get();
@@ -142,6 +182,7 @@ export class UserService {
   async getCurrentUser() {
     return this.currentUser;
   }
+
   isAuthenticatedUser(): boolean {
     return this.isAuthenticated;
   }
@@ -155,6 +196,7 @@ export class UserService {
       }
     }
   }
+  
   sendPasswordResetLink(email: string): Observable<any> {
     return from(firebase().auth().sendPasswordResetEmail(email));
   }

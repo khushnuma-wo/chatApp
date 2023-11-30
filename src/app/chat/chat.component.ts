@@ -22,7 +22,6 @@ const moment = require('moment-timezone');
   styleUrls: ["./chat.component.scss"]
 })
 export class ChatComponent {
-  userName: string;
   userId: string;
   newMessage: string = '';
   messages: any[] = [];
@@ -61,34 +60,28 @@ export class ChatComponent {
   channelId: string;
   isAndroid: boolean = false;
   currentUserId: any;
+  user: any;
+  users: any;
   @ViewChild("myScrollView", { static: false }) myScrollView: ElementRef<ScrollView>;
   private ngUnsubscribe$ = new Subject();
   constructor(private route: ActivatedRoute,
     private routerExtensions: RouterExtensions,
     private userService: UserService,
-    private chatService: ChatService,
     private store: Store,) {
     this.isAndroid = isAndroid;
 
     this.route.params.subscribe(params => {
-      this.userName = params.userName;
-    });
-    this.route.params.subscribe(params => {
+      this.channelId = params.conversationId;
       this.userId = params.userId;
     });
   }
   async ngOnInit() {
+    this.users = await this.userService.getAllUsers();
+    this.user = this.users?.find((res) => res?.userUid === this.userId);
     const currentUser = await this.userService.getCurrentUser();
     this.currentUserId = currentUser.user.uid;
-    const receiverId = this.userId;
-    this.route.params.subscribe((params) => {
-      this.userName = params.userName;
-      this.userId = params.userId;
-      this.channelId = params.conversationId;
-      const channelId = params.conversationId;
-      this.messages = [];
-      this.store.dispatch(fetchMessages({ channelId }))
-    });
+    const channelId = this.channelId;
+    this.store.dispatch(fetchMessages({ channelId }))
     this.loadChatMessages();
   }
 

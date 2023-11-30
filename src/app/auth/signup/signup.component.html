@@ -1,51 +1,24 @@
 <StackLayout class="container">
-  <Image
-    src="~/images/user.png"
-    class="profile-img"
-    stretch="aspectFill"
-    width="80"
-    height="80"
-  />
+  <AbsoluteLayout horizontalAlignment="center" class="imageFront">
+    <Image [src]="selectedImage ? selectedImage : '~/images/user.png'" class="profile-img" stretch="aspectFill" width="100" height="100" />
+    <Image src="~/images/add-button.png" width="35" height="35" marginRight="10" (tap)="onUploadMedia()" marginTop="65" marginLeft="65"></Image>
+  </AbsoluteLayout>
   <StackLayout class="input-field">
-    <TextField
-      class="input"
-      hint="Name"
-      maxLength="20"
-      [(ngModel)]="name"
-    ></TextField>
+    <TextField class="input" hint="First Name" maxLength="20" [(ngModel)]="firstName" color="white"></TextField>
   </StackLayout>
   <StackLayout class="input-field">
-    <TextField
-      class="input"
-      hint="Email"
-      maxLength="50"
-      [(ngModel)]="email"
-      (textChange)="validateForm()"
-    ></TextField>
+    <TextField class="input" hint="Last Name" maxLength="20" [(ngModel)]="lastName" color="white"></TextField>
   </StackLayout>
   <StackLayout class="input-field">
-    <TextField
-      class="input"
-      hint="Password"
-      secure="true"
-      name="password"
-      maxLength="20"
-      [(ngModel)]="password"
-      (textChange)="validateForm()"
-    ></TextField>
+    <TextField class="input" hint="Email" maxLength="50" [(ngModel)]="email" (textChange)="validateForm()" color="white"></TextField>
   </StackLayout>
-  <Button
-    text="Signup"
-    class="button"
-    (tap)="signup()"
-    [isEnabled]="isFormValid"
-  ></Button>
-  <Button
-    text="Go to Login"
-    nsRouterLink="/login"
-    class="button"
-  ></Button>
-<!-- <FlexboxLayout padding="5" alignItems="center" justifyContent="center">
+  <StackLayout class="input-field">
+    <TextField class="input" hint="Password" secure="true" name="password" maxLength="20" [(ngModel)]="password"
+      (textChange)="validateForm()"  color="white"></TextField>
+  </StackLayout>
+  <Button text="Signup" class="button" (tap)="signup()" [isEnabled]="isFormValid"></Button>
+  <Button text="Go to Login" nsRouterLink="/login" class="button"></Button>
+  <!-- <FlexboxLayout padding="5" alignItems="center" justifyContent="center">
   <FlexboxLayout padding="5" class="button-signup" (tap)="signupWithFacebook()">
     <Image src="~/images/facebook-icon.png" width="35" height="35" verticalAlignment="center"></Image>
     <Label text="Signup with Facebook" fontWeight="700" marginLeft="5" color="black"></Label>

@@ -1,7 +1,7 @@
 .container {
-    background-image: url("~/images/pexels4.jpg");
-    // background-size: cover;
-    // background-position: center;
+    background-image: url("~/images/background_image.jpg");
+    background-size: cover;
+    background-position: center;
     padding: 20;
     // flex-grow: 2;
     vertical-align: middle;
@@ -30,11 +30,16 @@
   }
   
   .profile-img {
-    border-radius: 50%;
+    border-radius: 50 !important;
     box-shadow: 
       0 0 20px rgba(0, 0, 0, 0.7),
       0 0 10px rgba(0, 0, 0, 0.5); 
   }  
+
+  .imageFront {
+    border-radius: 50 !important;
+    overflow: hidden;
+  }
   
   .input {
     color: black;

@@ -1,9 +1,9 @@
 <StackLayout>
-  <ActionBar [text]="userName" class="action-bar" flat="true">
+  <ActionBar [text]="user?.firstName + ' ' + user?.lastName" class="action-bar" flat="true">
     <StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
-      <Image width="30" height="30" src="~/images/man2.png"></Image>
+      <Image class="profile-img" [src]="user?.profileImage ? user?.profileImage : '~/images/user2.png'" stretch="aspectFill"></Image>
       <Label verticalAlignment="center" marginLeft="15" fontSize="20" fontWeight="500" color="black"
-        [text]="userName"></Label>
+        [text]="user?.firstName + ' ' + user?.lastName"></Label>
     </StackLayout>
     <NavigationButton ios:visibility="collapse" (tap)="goBack()" icon="font://&#xf053;" class="fas">
     </NavigationButton>
@@ -15,15 +15,14 @@
           <FlexboxLayout
             [ngClass]="{'message-row-right': message?.creator?.id === currentUserId, 'message-row-left': message?.creator?.id !== currentUserId}"
             *ngIf="!message.dateSeparator">
-            <Image src="~/images/man2.png" width="35" height="35" class="image"
-              *ngIf="message?.creator?.id !== currentUserId"></Image>
+            <Image class="profile-img" [src]="user?.profileImage ? user?.profileImage : '~/images/user2.png'" stretch="aspectFill" *ngIf="message?.creator?.id !== currentUserId" marginRight="5"></Image>
             <StackLayout
             boxShadow="rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px"
               [ngClass]="{'right-message': message?.creator?.id === currentUserId, 'left-message': message?.creator?.id !== currentUserId}"
               (longPress)="onLongPress($event, message)" padding="5 20 5 10"
               [borderRadius]="message?.creator?.id === currentUserId ? '10 10 0 10' : '10 10 10 0'">
               <FlexboxLayout justifyContent="space-between">
-                <Label [text]="userName" *ngIf="message?.creator?.id !== currentUserId" color="orange" fontSize="12"
+                <Label [text]="user?.firstName + ' ' + user?.lastName" *ngIf="message?.creator?.id !== currentUserId" color="orange" fontSize="12"
                   fontWeight="bold"></Label>
               </FlexboxLayout>
               <Label [text]="message.text" *ngIf="message.text" fontSize="12"></Label>

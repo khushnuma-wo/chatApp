@@ -3,8 +3,8 @@
     src="~/images/user.png"
     class="profile-img"
     stretch="aspectFill"
-    width="80"
-    height="80"
+    width="100"
+    height="100"
   />
   <StackLayout class="input-field">
     <TextField
@@ -14,6 +14,7 @@
       maxLength="50"
       [(ngModel)]="email"
       (textChange)="validateForm()"
+      color="white"
     ></TextField>
   </StackLayout>
 
@@ -25,10 +26,11 @@
       name="password"
       maxLength="20"
       [(ngModel)]="password"
+      color="white"
     ></TextField>
   </StackLayout>
   <StackLayout class="pass-label" (tap)="GoToForgotPassworPage()">
-    <Label text="Forgot password?" marginLeft="20"></Label>
+    <Label text="Forgot password?" marginLeft="20" color="white"></Label>
   </StackLayout>
 
   <Button text="Login" class="button" (tap)="login()" marginTop="15" [isEnabled]="isFormValid"></Button>

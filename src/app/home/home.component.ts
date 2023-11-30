@@ -23,6 +23,8 @@ export class HomeComponent implements OnInit {
   randomImagePath: any
   currentUser: any;
   currentUserId: any
+  users: any;
+  user: any;
   constructor(private routerExtensions: RouterExtensions,
     private userService: UserService,
     private chatService: ChatService,
@@ -39,7 +41,8 @@ export class HomeComponent implements OnInit {
     this.currentUser = await this.userService.getCurrentUser();
     this.currentUserId = this.currentUser.user.uid
     this.isLoading = true;
-
+    this.users = await this.userService.getAllUsers();
+    this.user = this.users?.find((res) => res?.userUid === this.currentUserId);
     try {
       const users = await this.chatListService.getUsersWithMessageCollection(this.currentUserId);
 
@@ -51,15 +54,10 @@ export class HomeComponent implements OnInit {
       console.error('Error fetching users:', error);
       this.isLoading = false;
     }
-
-    this.chatService.getConversation(this.currentUserId).subscribe((res) => {
-      this.conversations = res
-
-    })
     this.loadAllUsers();
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
     // if (Application.android) {
     //   this.isDarkMode = android.content.res.Configuration.UI_MODE_NIGHT_YES === (Application.android.context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK);
 
@@ -82,21 +80,22 @@ export class HomeComponent implements OnInit {
     //   }
     // }
 
+    this.currentUser = await this.userService.getCurrentUser();
+    this.currentUserId = this.currentUser.user.uid
+    this.chatService.getConversation(this.currentUserId).subscribe((res) => {
+      this.conversations = res
+
+    })
   }
 
   async loadAllUsers() {
     try {
       const currentUser = await this.userService.getCurrentUser();
-      const users = await this.userService.getAllUsers();
-  
-      this.allUsers = users
-        .filter(user => user.userUid !== currentUser.user.uid);
-  
+      this.allUsers = this.users.filter(user => user.userUid !== currentUser.user.uid);
+      
       for (const user of this.allUsers) {
-        user.profileImage = this.getRandomImagePath();
         user.latest = await this.getLatestMessageOfUser(user.userUid, currentUser.user.uid);
       }
-  
       this.isLoading = false;
     } catch (error) {
       console.error("Error loading users:", error);
@@ -125,10 +124,8 @@ export class HomeComponent implements OnInit {
 
   async onChat(user: any) {
     this.selectedUser = user;
-    const userName = user.name;
     this.userId = user.userUid;
     const { isMembersPresent, conversationId } = this.checkMembers(this.conversations, this.currentUserId, this.userId);
-    console.log("conversationId", isMembersPresent, conversationId)
     if (!isMembersPresent) {
       const channelObj: ChannelModel = {
         createdAt: '',
@@ -143,7 +140,7 @@ export class HomeComponent implements OnInit {
       };
       this.chatService.createChannel(channelObj)
     }
-    await this.routerExtensions.navigate([`/chat/${userName}/${this.userId}/${conversationId}`]);
+    await this.routerExtensions.navigate([`/chat/${this.userId}/${conversationId}`]);
   }
   
   checkMembers(conversations: any[], senderId: string, receiverId: string): { isMembersPresent: boolean, conversationId?: string } {
@@ -166,16 +163,6 @@ export class HomeComponent implements OnInit {
   
   chatList() {
     this.routerExtensions.navigate(["/chat-list"]);
-  }
-
-  getRandomImagePath(): string {
-    const imagePaths = [
-      "~/images/man1.png",
-      "~/images/man2.png",
-      "~/images/man3.png",
-    ];
-    const randomIndex = Math.floor(Math.random() * imagePaths.length);
-    return imagePaths[randomIndex];
   }
 
   getLatestMessageOfUser(userId, currentUserId) {
