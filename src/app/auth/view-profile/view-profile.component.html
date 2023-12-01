@@ -1,0 +1,51 @@
+<StackLayout backgroundColor="rgba(249, 249, 249, 0.94)">
+    <ActionBar [text]="title" class="action-bar" flat="true">
+        <StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
+            <Label verticalAlignment="center" marginLeft="15" fontSize="20" fontWeight="500" color="black"
+                [text]="title"></Label>
+        </StackLayout>
+        <NavigationButton ios:visibility="collapse" (tap)="goBack()" icon="font://&#xf053;" class="fas">
+        </NavigationButton>
+    </ActionBar>
+    <AbsoluteLayout>
+        <StackLayout class="profile-background" [backgroundImage]="user?.profileImage"></StackLayout>
+        <StackLayout class="profile-overlay"></StackLayout>
+    
+        <AbsoluteLayout>
+            <StackLayout class="profile-img" borderColor="white" borderWidth="3">
+                <Image src="~/images/man2.png" class="img-tag" stretch="aspectFill"></Image>
+            </StackLayout>
+
+            <StackLayout class="profile-img" borderColor="white" borderWidth="3" *ngIf="isEdit" backgroundColor="rgba(0,0,0,0.5)">
+            </StackLayout>
+        </AbsoluteLayout>
+    
+        <AbsoluteLayout *ngIf="isEdit">
+            <StackLayout *ngIf="isEdit">
+                <Image src="~/images/white_camera.png"  width="40" height="40" marginTop="140" marginLeft="185" horizontalAlignment="center" verticalAlignment="center">
+                </Image>
+            </StackLayout>
+        </AbsoluteLayout>
+    </AbsoluteLayout>
+    
+    <StackLayout horizontalAlignment="center" marginTop="10">
+        <Label [text]="user?.firstName + ' ' + user?.lastName" color="black" fontSize="20" fontWeight="500"></Label>
+    </StackLayout>
+    <GridLayout rows="auto, auto, auto, auto" marginTop="30">
+        <StackLayout orientation="horizontal" row="0">
+            <TextField borderColor="grey" [(ngModel)]="firstName" [text]="user?.firstName" class="input-field"
+                padding="10" borderWidth="1" hint="First Name" borderRadius="5" [isEnabled]="isEdit"></TextField>
+            <TextField borderColor="grey" [(ngModel)]="lastName" [text]="user?.lastName" padding="10"
+                class="input-field" borderWidth="1" hint="Last Name" borderRadius="5" [isEnabled]="isEdit"></TextField>
+        </StackLayout>
+
+        <TextField row="1" borderColor="grey" [(ngModel)]="email" [text]="user?.email" (textChange)="validateForm()"
+            class="input-email-field" padding="10" borderWidth="1" hint="Email" borderRadius="5" [isEnabled]="isEdit">
+        </TextField>
+        <!-- <TextField row="2" borderColor="grey" class="input-email-field" padding="10" borderWidth="1" hint="Password" borderRadius="5" secure="true"></TextField> -->
+        <Button row="2" text="Update Profile" class="input-email-field" color="white" backgroundColor="#2f85f0"
+            padding="10" borderRadius="5" [isEnabled]="isEdit && isFormValid" (tap)="updateProfile()"></Button>
+
+    </GridLayout>
+
+</StackLayout>

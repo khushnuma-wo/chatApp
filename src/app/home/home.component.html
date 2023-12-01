@@ -1,24 +1,29 @@
 <StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
-  <ActionBar title="ChatVista" class="action-bar" letterSpacing="0.5" fontWeight="bold">
+  <ActionBar title="DuoTalk" class="action-bar" letterSpacing="0.5" fontWeight="bold">
     <StackLayout horizontalAlignment="left" verticalAlignment="center" orientation="horizontal">
       <Image class="profile-icon" [src]="user?.profileImage ? user?.profileImage : '~/images/user2.png'"
         stretch="aspectFill"></Image>
       <Label verticalAlignment="center" marginLeft="15" fontSize="20" fontWeight="500" color="black"
-        text="ChatVista"></Label>
+        text="DuoTalk"></Label>
     </StackLayout>
-    <ActionItem position="left">
+    <!-- <ActionItem position="left">
       <GridLayout width="50">
         <Image width="30" height="30" android:marginBottom="3" src="~/images/power.png" (tap)="logout()"></Image>
       </GridLayout>
-    </ActionItem>
-    <ActionItem position="left">
+    </ActionItem> -->
+    <!-- <ActionItem position="left">
       <FlexBoxLayout justifyContent="space-between">
-        <AbsoluteLayout alignItems="center" marginRight="10">
+        <AbsoluteLayout alignItems="center" marginRight="7">
           <Image width="30" height="30" android:marginBottom="3" src="~/images/chat.png" (tap)="chatList()"></Image>
           <Label fontWeight="800" class="chatLength" color="#0F71EB" marginTop="-18" marginLeft="20" [text]="userLength"
             textAlign="center"></Label>
         </AbsoluteLayout>
       </FlexBoxLayout>
+    </ActionItem> -->
+    <ActionItem position="left">
+      <GridLayout width="40">
+        <Image width="30" height="30" android:marginBottom="3" src="~/images/menu.png" (tap)="menuItems()"></Image>
+      </GridLayout>
     </ActionItem>
   </ActionBar>
 </StackLayout>
@@ -28,8 +33,8 @@
       <ng-template let-item="item">
         <GridLayout columns="auto, *, *" borderRadius="10" (tap)="onChat(item)">
           <StackLayout height="70">
-            <Image [src]="item.profileImage? item.profileImage : '~/images/user2.png'" class="profile-img"
-              stretch="aspectFill"></Image>
+            <Image [src]="item.profileImage? item.profileImage : '~/images/user2.png'" borderRadius="50" borderWidth="1"
+              borderColor="gray" class="profile-img" stretch="aspectFill"></Image>
           </StackLayout>
           <StackLayout col="1" row="0">
             <GridLayout columns="auto" rows="auto">

@@ -4,9 +4,9 @@ import { UserService } from "../services/user.service";
 import { Feedback, FeedbackType, FeedbackPosition } from "nativescript-feedback";
 import { Dialogs } from "@nativescript/core";
 import { ChatListService } from "../services/chat-list.service";
-import { Application } from "@nativescript/core";
 import { ChatService } from "../services/chat.service";
 import { ChannelModel } from "../state/class/message.class";
+import { action } from "@nativescript/core";
 
 @Component({
   selector: "ns-signup",
@@ -92,7 +92,7 @@ export class HomeComponent implements OnInit {
     try {
       const currentUser = await this.userService.getCurrentUser();
       this.allUsers = this.users.filter(user => user.userUid !== currentUser.user.uid);
-      
+
       for (const user of this.allUsers) {
         user.latest = await this.getLatestMessageOfUser(user.userUid, currentUser.user.uid);
       }
@@ -101,7 +101,7 @@ export class HomeComponent implements OnInit {
       console.error("Error loading users:", error);
     }
   }
-  
+
   logout() {
     Dialogs.confirm({
       title: "Confirm Logout",
@@ -142,7 +142,7 @@ export class HomeComponent implements OnInit {
     }
     await this.routerExtensions.navigate([`/chat/${this.userId}/${conversationId}`]);
   }
-  
+
   checkMembers(conversations: any[], senderId: string, receiverId: string): { isMembersPresent: boolean, conversationId?: string } {
     if (conversations) {
       const matchingConversation = conversations.find((conversation) => {
@@ -151,7 +151,7 @@ export class HomeComponent implements OnInit {
           conversation.members.includes(receiverId)
         );
       });
-  
+
       return {
         isMembersPresent: !!matchingConversation,
         conversationId: matchingConversation ? matchingConversation.id : undefined,
@@ -160,7 +160,7 @@ export class HomeComponent implements OnInit {
       return { isMembersPresent: false };
     }
   }
-  
+
   chatList() {
     this.routerExtensions.navigate(["/chat-list"]);
   }
@@ -172,7 +172,7 @@ export class HomeComponent implements OnInit {
     ));
     return matchingConversation?.latest;
   }
-  
+
   getMessageText(message: any): string {
     if (message?.createdAt) {
       const messageTime = new Date(message?.createdAt);
@@ -186,4 +186,30 @@ export class HomeComponent implements OnInit {
     return message.message;
   }
 
+  async menuItems() {
+    const options = {
+      title: "User Options",
+      actions: ["View Profile", "Edit Profile", "Sign out", "Cancel"]
+    };
+    let isEdit = false;
+    action(options).then((result) => {
+      if (result !== "Cancel" && result !== undefined) {
+        if (result === "View Profile") {
+          isEdit = false
+          this.routerExtensions.navigate([`/view-profile`], {
+            queryParams: {isEdit}
+          });
+        } else if (result === "Edit Profile") {
+          isEdit = true
+          this.routerExtensions.navigate([`/view-profile`], {
+            queryParams: {isEdit}
+          });
+        } else if (result === "Sign out") {
+          this.logout()
+        }
+      } else {
+        console.log("Menu canceled or no option selected");
+      }
+    });
+  }
 }
